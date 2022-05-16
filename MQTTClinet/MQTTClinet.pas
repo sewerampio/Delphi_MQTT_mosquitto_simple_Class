@@ -69,6 +69,7 @@ type
     // public
     procedure Disconnect;
     function Connect: Boolean;
+    function isConnected: Boolean;
 
     function Publish(const topic: string; const payload: string; const QoS: Integer; const retain: Boolean): Boolean;
     function Subscribe(const topic: string; const QoS: Integer; const retain: Boolean): Boolean;
