@@ -7,6 +7,10 @@ uses
   MOSQUITTO;
 
 type
+
+  TConnectionState = (tcsUnknown = 0, tcsConnecting = 1, tcsConnected = 2, tcsDisconnected = 3, tcsReady = 4);
+
+type
   IMQTTClinet = Interface;
 
   MQTTCallback_On_tls_set = function(Sender: IMQTTClinet; buf: PChar; size: Integer; rwflag: Integer; userdata: Pointer): Integer of object;
@@ -67,6 +71,7 @@ type
     procedure feedback_main_callback_on_log(mosq: Pmosquitto; obj: Pointer; level: Integer; str: PAnsiChar);
 
     // public
+    function GetState: TConnectionState;
     procedure Disconnect;
     function Connect: Boolean;
     function isConnected: Boolean;
@@ -96,6 +101,9 @@ type
     property OnLog: MQTTCallback_On_log write SetFOnLog;
 
   End;
+
+procedure Convert_Topic_To_String(const utf8str: PAnsiChar; var str: string);
+function ConvertStringToUTF8(const str: string; var utf8str: AnsiString): Integer;
 
 function MQTTClientCreate: IMQTTClinet;
 
@@ -157,6 +165,8 @@ type
       f_sub_id: Integer;
       f_sub_topic: AnsiString;
       f_sub_qos: Integer;
+
+      FConnectionState: TConnectionState;
 
       // CallbackList:
       FOnTlsSet: MQTTCallback_On_tls_set;
@@ -227,6 +237,8 @@ type
       procedure Disconnect;
       function Connect: Boolean;
       function isConnected: Boolean;
+
+      function GetState: TConnectionState;
 
       function libVersion: String;
 
@@ -414,6 +426,8 @@ begin
   if f_connected = True then
     Abort;
 
+  self.FConnectionState := tcsConnecting;
+
   try
 
     self.Disconnect;
@@ -581,6 +595,8 @@ begin
   self.FOnUnsubscribe := nil;
   self.FOnLog := nil;
 
+  self.FConnectionState := tcsUnknown;
+
   self.FInitialized := false;
   self.FSesionStarted := false;
   self.f_connected := false;
@@ -648,18 +664,18 @@ end;
 
 procedure TMQTTClient.feedback_main_callback_on_connect(mosq: Pmosquitto; obj: Pointer; rc: Integer);
 begin
-
   if Assigned(self.FOnConnect) then
     try
       self.FOnConnect(self, obj, rc);
     except
 
     end;
-
+  self.FConnectionState := tcsConnected;
 end;
 
 procedure TMQTTClient.feedback_main_callback_on_disconnect(mosq: Pmosquitto; obj: Pointer; rc: Integer);
 begin
+  self.FConnectionState := tcsDisconnected;
 
   if Assigned(self.FOnDisconnect) then
     try
@@ -791,6 +807,11 @@ begin
   ConvertUTF8ToString(PAnsiChar(self.f_user_name), result);
 end;
 
+function TMQTTClient.GetState: TConnectionState;
+begin
+  result := self.FConnectionState;
+end;
+
 function TMQTTClient.isConnected: Boolean;
 begin
   result := self.f_connected;
@@ -902,7 +923,11 @@ begin
     f_mosq := Nil;
   end;
 
-  f_mosq := mosquitto_new(PAnsiChar(self.f_user_id), self.f_clean_session, @self.f_user_obj);
+  if self.f_user_id = '' then
+    f_mosq := mosquitto_new(nil, self.f_clean_session, @self.f_user_obj)
+  else
+    f_mosq := mosquitto_new(PAnsiChar(self.f_user_id), self.f_clean_session, @self.f_user_obj);
+
   if f_mosq = Nil then
   begin
     Abort;
@@ -1067,6 +1092,41 @@ end;
 function MQTTClientCreate: IMQTTClinet;
 begin
   result := TMQTTClient.Create;
+end;
+
+procedure Convert_Topic_To_String(const utf8str: PAnsiChar; var str: string);
+var
+  L: Integer;
+  Temp: UnicodeString;
+begin
+  L := System.SysUtils.StrLen(utf8str);
+
+  str := '';
+  if L = 0 then
+    exit;
+  SetLength(Temp, L);
+
+  L := System.Utf8ToUnicode(PWideChar(Temp), L + 1, utf8str, L);
+  if L > 0 then
+    SetLength(Temp, L - 1)
+  else
+    Temp := '';
+  str := Temp;
+
+end;
+
+function ConvertStringToUTF8(const str: string; var utf8str: AnsiString): Integer;
+var
+  L, SL: Integer;
+begin
+  SL := Length(str);
+  L := SL * SizeOf(Char);
+  L := L + 1;
+
+  SetLength(utf8str, L);
+  UnicodeToUtf8(PAnsiChar(utf8str), L, PWideChar(str), SL);
+  result := System.SysUtils.StrLen(PAnsiChar(utf8str));
+
 end;
 
 initialization
