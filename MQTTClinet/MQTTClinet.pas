@@ -1,533 +1,512 @@
-unit MQTTClinet;
+Unit MQTTClinet;
 
-interface
+Interface
 
-uses
+Uses
   System.Generics.Collections,
   MOSQUITTO;
 
-type
-
+Type
   TConnectionState = (tcsUnknown = 0, tcsConnecting = 1, tcsConnected = 2, tcsDisconnected = 3, tcsReady = 4);
 
-type
+Type
   IMQTTClinet = Interface;
 
-  MQTTCallback_On_tls_set = function(Sender: IMQTTClinet; buf: PChar; size: Integer; rwflag: Integer; userdata: Pointer): Integer of object;
-  MQTTCallback_On_connect = procedure(Sender: IMQTTClinet; obj: Pointer; rc: Integer) of object;
-  MQTTCallback_On_disconnect = procedure(Sender: IMQTTClinet; obj: Pointer; rc: Integer) of object;
-  MQTTCallback_On_publish = procedure(Sender: IMQTTClinet; obj: Pointer; mid: Integer) of object;
-  MQTTCallback_On_message = procedure(Sender: IMQTTClinet; obj: Pointer; mosquitto_message: P_mosquitto_message) of object;
-  MQTTCallback_On_subscribe = procedure(Sender: IMQTTClinet; obj: Pointer; mid: Integer; qos_count: Integer; granted_qos: PInteger) of object;
-  MQTTCallback_On_unsubscribe = procedure(Sender: IMQTTClinet; obj: Pointer; mid: Integer) of object;
-  MQTTCallback_On_log = procedure(Sender: IMQTTClinet; obj: Pointer; level: Integer; str: PAnsiChar) of object;
+  MQTTCallback_On_tls_set = Function(Sender: IMQTTClinet; buf: PChar; size: Integer; rwflag: Integer; userdata: Pointer): Integer Of Object;
 
-  IMQTTClinet = Interface(
-    IInterface)
+  MQTTCallback_On_connect = Procedure(Sender: IMQTTClinet; obj: Pointer; rc: Integer) Of Object;
+
+  MQTTCallback_On_disconnect = Procedure(Sender: IMQTTClinet; obj: Pointer; rc: Integer) Of Object;
+
+  MQTTCallback_On_publish = Procedure(Sender: IMQTTClinet; obj: Pointer; mid: Integer) Of Object;
+
+  MQTTCallback_On_message = Procedure(Sender: IMQTTClinet; obj: Pointer; mosquitto_message: P_mosquitto_message) Of Object;
+
+  MQTTCallback_On_subscribe = Procedure(Sender: IMQTTClinet; obj: Pointer; mid: Integer; qos_count: Integer; granted_qos: PInteger) Of Object;
+
+  MQTTCallback_On_unsubscribe = Procedure(Sender: IMQTTClinet; obj: Pointer; mid: Integer) Of Object;
+
+  MQTTCallback_On_log = Procedure(Sender: IMQTTClinet; obj: Pointer; level: Integer; Str: PAnsiChar) Of Object;
+
+  IMQTTClinet = Interface(IInterface)
     // private
-    function libVersion: String;
-
-    function GetFInitialized: Boolean;
-
-    function GetFUser: String;
-    procedure SetFUser(const Value: String);
-
-    function GetFPassword: String;
-    procedure SetFPassword(const Value: String);
-
-    function GetFHost: String;
-    procedure SetFHost(const Value: String);
-
-    function GetFPort: Uint32;
-    procedure SetFPort(const Value: Uint32);
-
-    function GetFKeepAlive: Integer;
-    procedure SetKeepAlive(const Value: Integer);
-
-    function GetFClientID: String;
-    procedure setFClientID(const Value: String);
-
-    function GetFCleanSession: Boolean;
-    procedure SetFCleanSession(const Value: Boolean);
-
-    procedure SetFOnConnect(const Value: MQTTCallback_On_connect);
-    procedure SetFOnDisconnect(const Value: MQTTCallback_On_disconnect);
-    procedure SetFOnLog(const Value: MQTTCallback_On_log);
-    procedure SetFOnMessage(const Value: MQTTCallback_On_message);
-    procedure SetFOnPublish(const Value: MQTTCallback_On_publish);
-    procedure SetFOnSubscribe(const Value: MQTTCallback_On_subscribe);
-    procedure SetFOnTlsSet(const Value: MQTTCallback_On_tls_set);
-    procedure SetFOnUnsubscribe(const Value: MQTTCallback_On_unsubscribe);
+    Function libVersion: String;
+    Function GetFInitialized: Boolean;
+    Function GetFUser: String;
+    Procedure SetFUser(Const Value: String);
+    Function GetFPassword: String;
+    Procedure SetFPassword(Const Value: String);
+    Function GetFHost: String;
+    Procedure SetFHost(Const Value: String);
+    Function GetFPort: UInt32;
+    Procedure SetFPort(Const Value: UInt32);
+    Function GetFKeepAlive: Integer;
+    Procedure SetKeepAlive(Const Value: Integer);
+    Function GetFClientID: String;
+    Procedure setFClientID(Const Value: String);
+    Function GetFCleanSession: Boolean;
+    Procedure SetFCleanSession(Const Value: Boolean);
+    Procedure SetFOnConnect(Const Value: MQTTCallback_On_connect);
+    Procedure SetFOnDisconnect(Const Value: MQTTCallback_On_disconnect);
+    Procedure SetFOnLog(Const Value: MQTTCallback_On_log);
+    Procedure SetFOnMessage(Const Value: MQTTCallback_On_message);
+    Procedure SetFOnPublish(Const Value: MQTTCallback_On_publish);
+    Procedure SetFOnSubscribe(Const Value: MQTTCallback_On_subscribe);
+    Procedure SetFOnTlsSet(Const Value: MQTTCallback_On_tls_set);
+    Procedure SetFOnUnsubscribe(Const Value: MQTTCallback_On_unsubscribe);
 
     // only to callback core
 
-    function feedback_main_callback_tls_set(buf: PChar; size: Integer; rwflag: Integer; userdata: Pointer): Integer;
-    procedure feedback_main_callback_on_connect(mosq: Pmosquitto; obj: Pointer; rc: Integer);
-    procedure feedback_main_callback_on_disconnect(mosq: Pmosquitto; obj: Pointer; rc: Integer);
-    procedure feedback_main_callback_on_publish(mosq: Pmosquitto; obj: Pointer; mid: Integer);
-    procedure feedback_main_callback_on_message(mosq: Pmosquitto; obj: Pointer; mosquitto_message: P_mosquitto_message);
-    procedure feedback_main_callback_on_subscribe(mosq: Pmosquitto; obj: Pointer; mid: Integer; qos_count: Integer; granted_qos: PInteger);
-    procedure feedback_main_callback_on_unsubscribe(mosq: Pmosquitto; obj: Pointer; mid: Integer);
-    procedure feedback_main_callback_on_log(mosq: Pmosquitto; obj: Pointer; level: Integer; str: PAnsiChar);
+    Function feedback_main_callback_tls_set(buf: PChar; size: Integer; rwflag: Integer; userdata: Pointer): Integer;
+    Procedure feedback_main_callback_on_connect(mosq: Pmosquitto; obj: Pointer; rc: Integer);
+    Procedure feedback_main_callback_on_disconnect(mosq: Pmosquitto; obj: Pointer; rc: Integer);
+    Procedure feedback_main_callback_on_publish(mosq: Pmosquitto; obj: Pointer; mid: Integer);
+    Procedure feedback_main_callback_on_message(mosq: Pmosquitto; obj: Pointer; mosquitto_message: P_mosquitto_message);
+    Procedure feedback_main_callback_on_subscribe(mosq: Pmosquitto; obj: Pointer; mid: Integer; qos_count: Integer; granted_qos: PInteger);
+    Procedure feedback_main_callback_on_unsubscribe(mosq: Pmosquitto; obj: Pointer; mid: Integer);
+    Procedure feedback_main_callback_on_log(mosq: Pmosquitto; obj: Pointer; level: Integer; Str: PAnsiChar);
 
     // public
-    function GetState: TConnectionState;
-    procedure Disconnect;
-    function Connect: Boolean;
-    function isConnected: Boolean;
-
-    function Publish(const topic: string; const payload: string; const QoS: Integer; const retain: Boolean): Boolean;
-    function Subscribe(const topic: string; const QoS: Integer; const retain: Boolean): Boolean;
-    function Unsubscribe(const topic: string): Boolean;
-
-    property Initialized: Boolean read GetFInitialized;
-
-    property User: String read GetFUser write SetFUser;
-    property Password: String read GetFPassword write SetFPassword;
-    property Host: String read GetFHost write SetFHost;
-    property Port: Uint32 read GetFPort write SetFPort;
-    property KeepAlive: Integer read GetFKeepAlive write SetKeepAlive;
-
-    property ClientID: String read GetFClientID write setFClientID;
-    property CleanSession: Boolean read GetFCleanSession write SetFCleanSession;
-
-    property OnTlsSet: MQTTCallback_On_tls_set write SetFOnTlsSet;
-    property OnConnect: MQTTCallback_On_connect write SetFOnConnect;
-    property OnDisconnect: MQTTCallback_On_disconnect write SetFOnDisconnect;
-    property OnPublish: MQTTCallback_On_publish write SetFOnPublish;
-    property OnMessage: MQTTCallback_On_message write SetFOnMessage;
-    property OnSubscribe: MQTTCallback_On_subscribe write SetFOnSubscribe;
-    property OnUnsubscribe: MQTTCallback_On_unsubscribe write SetFOnUnsubscribe;
-    property OnLog: MQTTCallback_On_log write SetFOnLog;
-
+    Function GetState: TConnectionState;
+    Procedure Disconnect;
+    Function Connect: Boolean;
+    Function isConnected: Boolean;
+    Function Publish(Const topic: String; Const payload: String; Const QoS: Integer; Const retain: Boolean): Boolean;
+    Function Subscribe(Const topic: String; Const QoS: Integer; Const retain: Boolean): Boolean;
+    Function Unsubscribe(Const topic: String): Boolean;
+    Property Initialized: Boolean Read GetFInitialized;
+    Property User: String Read GetFUser Write SetFUser;
+    Property Password: String Read GetFPassword Write SetFPassword;
+    Property Host: String Read GetFHost Write SetFHost;
+    Property Port: UInt32 Read GetFPort Write SetFPort;
+    Property KeepAlive: Integer Read GetFKeepAlive Write SetKeepAlive;
+    Property ClientID: String Read GetFClientID Write setFClientID;
+    Property CleanSession: Boolean Read GetFCleanSession Write SetFCleanSession;
+    Property OnTlsSet: MQTTCallback_On_tls_set Write SetFOnTlsSet;
+    Property OnConnect: MQTTCallback_On_connect Write SetFOnConnect;
+    Property OnDisconnect: MQTTCallback_On_disconnect Write SetFOnDisconnect;
+    Property OnPublish: MQTTCallback_On_publish Write SetFOnPublish;
+    Property OnMessage: MQTTCallback_On_message Write SetFOnMessage;
+    Property OnSubscribe: MQTTCallback_On_subscribe Write SetFOnSubscribe;
+    Property OnUnsubscribe: MQTTCallback_On_unsubscribe Write SetFOnUnsubscribe;
+    Property OnLog: MQTTCallback_On_log Write SetFOnLog;
   End;
 
-procedure Convert_Topic_To_String(const utf8str: PAnsiChar; var str: string);
-function ConvertStringToUTF8(const str: string; var utf8str: AnsiString): Integer;
+Procedure Convert_Topic_To_String(Const utf8str: PAnsiChar; Var Str: String);
 
-function MQTTClientCreate: IMQTTClinet;
+Function ConvertStringToUTF8(Const Str: String; Var utf8str: AnsiString): Integer;
+
+Function MQTTClientCreate: IMQTTClinet;
 
 Var
   ClientList: TDictionary<Integer, Integer>;
 
-implementation
+Implementation
 
-uses
+Uses
   System.SysUtils,
   System.Threading,
   CodeSiteLogging;
 
-type
-
-  T_user_obj = record
+Type
+  T_user_obj = Record
     Data: Integer;
-  end;
+  End;
 
   P_user_obg = ^T_user_obj;
 
-type
+Type
+  TMQTTClient = Class(TInterfacedObject, IMQTTClinet)
+  Private
+    FLibVersion: String;
 
-  TMQTTClient = class(
-    TInterfacedObject,
-    IMQTTClinet)
-    private
-      FLibVersion: String;
+    FInitialized: Boolean;
+    FSesionStarted: Boolean;
 
-      FInitialized: Boolean;
-      FSesionStarted: Boolean;
+    f_loop_task: ITask;
 
-      f_loop_task: ITask;
+    f_connected: Boolean;
 
-      f_connected: Boolean;
+    f_mosq: Pmosquitto;
 
-      f_mosq: Pmosquitto;
+    f_user_obj: T_user_obj;
+    f_user_id: AnsiString;
 
-      f_user_obj: T_user_obj;
-      f_user_id: AnsiString;
+    f_clean_session: Byte;
 
-      f_clean_session: Byte;
+    f_user_name: AnsiString;
+    f_user_password: AnsiString;
 
-      f_user_name: AnsiString;
-      f_user_password: AnsiString;
+    f_hostname: AnsiString;
+    f_port: UInt32;
 
-      f_hostname: AnsiString;
-      f_port: Uint32;
+    f_keepalive: Integer;
 
-      f_keepalive: Integer;
+    f_pub_id: Integer;
+    f_pub_topic: AnsiString;
+    f_pub_payload_len: Integer;
+    f_pub_payload: AnsiString;
+    f_pub_qos: Integer;
+    f_pub_retain: Byte;
 
-      f_pub_id: Integer;
-      f_pub_topic: AnsiString;
-      f_pub_payload_len: Integer;
-      f_pub_payload: AnsiString;
-      f_pub_qos: Integer;
-      f_pub_retain: Byte;
+    f_sub_id: Integer;
+    f_sub_topic: AnsiString;
+    f_sub_qos: Integer;
 
-      f_sub_id: Integer;
-      f_sub_topic: AnsiString;
-      f_sub_qos: Integer;
-
-      FConnectionState: TConnectionState;
+    FConnectionState: TConnectionState;
 
       // CallbackList:
-      FOnTlsSet: MQTTCallback_On_tls_set;
-      FOnConnect: MQTTCallback_On_connect;
-      FOnDisconnect: MQTTCallback_On_disconnect;
-      FOnPublish: MQTTCallback_On_publish;
-      FOnMessage: MQTTCallback_On_message;
-      FOnSubscribe: MQTTCallback_On_subscribe;
-      FOnUnsubscribe: MQTTCallback_On_unsubscribe;
-      FOnLog: MQTTCallback_On_log;
+    FOnTlsSet: MQTTCallback_On_tls_set;
+    FOnConnect: MQTTCallback_On_connect;
+    FOnDisconnect: MQTTCallback_On_disconnect;
+    FOnPublish: MQTTCallback_On_publish;
+    FOnMessage: MQTTCallback_On_message;
+    FOnSubscribe: MQTTCallback_On_subscribe;
+    FOnUnsubscribe: MQTTCallback_On_unsubscribe;
+    FOnLog: MQTTCallback_On_log;
 
-      function ConvertStringToUTF8(const str: string; var utf8str: AnsiString): Integer;
-      procedure ConvertUTF8ToString(const utf8str: PAnsiChar; var str: string);
+    Function ConvertStringToUTF8(Const Str: String; Var utf8str: AnsiString): Integer;
+    Procedure ConvertUTF8ToString(Const utf8str: PAnsiChar; Var Str: String);
 
-      procedure Convert_Topic_To_String(const utf8str: PAnsiChar; var str: string);
-      procedure Convert_Payload_To_String(const utf8str: PAnsiChar; sz: Integer; var str: string);
+    Procedure Convert_Topic_To_String(Const utf8str: PAnsiChar; Var Str: String);
+    Procedure Convert_Payload_To_String(Const utf8str: PAnsiChar; sz: Integer; Var Str: String);
 
-      function libInit: Boolean;
-      function GetFInitialized: Boolean;
+    Function libInit: Boolean;
+    Function GetFInitialized: Boolean;
 
-      function SessionStart: Boolean;
+    Function SessionStart: Boolean;
 
-      function GetFHost: String;
-      procedure SetFHost(const Value: String);
+    Function GetFHost: String;
+    Procedure SetFHost(Const Value: String);
 
-      function GetFPort: Uint32;
-      procedure SetFPort(const Value: Uint32);
+    Function GetFPort: UInt32;
+    Procedure SetFPort(Const Value: UInt32);
 
-      function GetFClientID: String;
-      procedure setFClientID(const Value: String);
+    Function GetFClientID: String;
+    Procedure setFClientID(Const Value: String);
 
-      function GetFUser: String;
-      procedure SetFUser(const Value: String);
+    Function GetFUser: String;
+    Procedure SetFUser(Const Value: String);
 
-      function GetFPassword: String;
-      procedure SetFPassword(const Value: String);
+    Function GetFPassword: String;
+    Procedure SetFPassword(Const Value: String);
 
-      function GetFCleanSession: Boolean;
-      procedure SetFCleanSession(const Value: Boolean);
+    Function GetFCleanSession: Boolean;
+    Procedure SetFCleanSession(Const Value: Boolean);
 
-      function GetFKeepAlive: Integer;
-      procedure SetKeepAlive(const Value: Integer);
+    Function GetFKeepAlive: Integer;
+    Procedure SetKeepAlive(Const Value: Integer);
 
-      procedure SetFOnConnect(const Value: MQTTCallback_On_connect);
-      procedure SetFOnDisconnect(const Value: MQTTCallback_On_disconnect);
-      procedure SetFOnLog(const Value: MQTTCallback_On_log);
-      procedure SetFOnMessage(const Value: MQTTCallback_On_message);
-      procedure SetFOnPublish(const Value: MQTTCallback_On_publish);
-      procedure SetFOnSubscribe(const Value: MQTTCallback_On_subscribe);
-      procedure SetFOnTlsSet(const Value: MQTTCallback_On_tls_set);
-      procedure SetFOnUnsubscribe(const Value: MQTTCallback_On_unsubscribe);
+    Procedure SetFOnConnect(Const Value: MQTTCallback_On_connect);
+    Procedure SetFOnDisconnect(Const Value: MQTTCallback_On_disconnect);
+    Procedure SetFOnLog(Const Value: MQTTCallback_On_log);
+    Procedure SetFOnMessage(Const Value: MQTTCallback_On_message);
+    Procedure SetFOnPublish(Const Value: MQTTCallback_On_publish);
+    Procedure SetFOnSubscribe(Const Value: MQTTCallback_On_subscribe);
+    Procedure SetFOnTlsSet(Const Value: MQTTCallback_On_tls_set);
+    Procedure SetFOnUnsubscribe(Const Value: MQTTCallback_On_unsubscribe);
 
-    protected
+  Protected
+  Public
+    Constructor Create; Overload;
+    Destructor Destroy; Override;
 
-    public
-      constructor Create; overload;
-      destructor Destroy; override;
+    Function feedback_main_callback_tls_set(buf: PChar; size: Integer; rwflag: Integer; userdata: Pointer): Integer;
+    Procedure feedback_main_callback_on_connect(mosq: Pmosquitto; obj: Pointer; rc: Integer);
+    Procedure feedback_main_callback_on_disconnect(mosq: Pmosquitto; obj: Pointer; rc: Integer);
+    Procedure feedback_main_callback_on_publish(mosq: Pmosquitto; obj: Pointer; mid: Integer);
+    Procedure feedback_main_callback_on_message(mosq: Pmosquitto; obj: Pointer; mosquitto_message: P_mosquitto_message);
+    Procedure feedback_main_callback_on_subscribe(mosq: Pmosquitto; obj: Pointer; mid: Integer; qos_count: Integer; granted_qos: PInteger);
+    Procedure feedback_main_callback_on_unsubscribe(mosq: Pmosquitto; obj: Pointer; mid: Integer);
+    Procedure feedback_main_callback_on_log(mosq: Pmosquitto; obj: Pointer; level: Integer; Str: PAnsiChar);
 
-      function feedback_main_callback_tls_set(buf: PChar; size: Integer; rwflag: Integer; userdata: Pointer): Integer;
-      procedure feedback_main_callback_on_connect(mosq: Pmosquitto; obj: Pointer; rc: Integer);
-      procedure feedback_main_callback_on_disconnect(mosq: Pmosquitto; obj: Pointer; rc: Integer);
-      procedure feedback_main_callback_on_publish(mosq: Pmosquitto; obj: Pointer; mid: Integer);
-      procedure feedback_main_callback_on_message(mosq: Pmosquitto; obj: Pointer; mosquitto_message: P_mosquitto_message);
-      procedure feedback_main_callback_on_subscribe(mosq: Pmosquitto; obj: Pointer; mid: Integer; qos_count: Integer; granted_qos: PInteger);
-      procedure feedback_main_callback_on_unsubscribe(mosq: Pmosquitto; obj: Pointer; mid: Integer);
-      procedure feedback_main_callback_on_log(mosq: Pmosquitto; obj: Pointer; level: Integer; str: PAnsiChar);
+    Procedure Disconnect;
+    Function Connect: Boolean;
+    Function isConnected: Boolean;
 
-      procedure Disconnect;
-      function Connect: Boolean;
-      function isConnected: Boolean;
+    Function GetState: TConnectionState;
 
-      function GetState: TConnectionState;
+    Function libVersion: String;
 
-      function libVersion: String;
+    Property Initialized: Boolean Read GetFInitialized;
 
-      property Initialized: Boolean read GetFInitialized;
+    Property Host: String Read GetFHost Write SetFHost;
+    Property Port: UInt32 Read GetFPort Write SetFPort;
+    Property ClientID: String Read GetFClientID Write setFClientID;
+    Property KeepAlive: Integer Read GetFKeepAlive Write SetKeepAlive;
 
-      property Host: String read GetFHost write SetFHost;
-      property Port: Uint32 read GetFPort write SetFPort;
-      property ClientID: String read GetFClientID write setFClientID;
-      property KeepAlive: Integer read GetFKeepAlive write SetKeepAlive;
+    Property CleanSession: Boolean Read GetFCleanSession Write SetFCleanSession;
 
-      property CleanSession: Boolean read GetFCleanSession write SetFCleanSession;
+    Property User: String Read GetFUser Write SetFUser;
+    Property Password: String Read GetFPassword Write SetFPassword;
 
-      property User: String read GetFUser write SetFUser;
-      property Password: String read GetFPassword write SetFPassword;
+    Function Publish(Const topic: String; Const payload: String; Const QoS: Integer; Const retain: Boolean): Boolean;
+    Function Subscribe(Const topic: String; Const QoS: Integer; Const retain: Boolean): Boolean;
+    Function Unsubscribe(Const topic: String): Boolean;
 
-      function Publish(const topic: string; const payload: string; const QoS: Integer; const retain: Boolean): Boolean;
-      function Subscribe(const topic: string; const QoS: Integer; const retain: Boolean): Boolean;
-      function Unsubscribe(const topic: string): Boolean;
+    Property OnTlsSet: MQTTCallback_On_tls_set Write SetFOnTlsSet;
+    Property OnConnect: MQTTCallback_On_connect Write SetFOnConnect;
+    Property OnDisconnect: MQTTCallback_On_disconnect Write SetFOnDisconnect;
+    Property OnPublish: MQTTCallback_On_publish Write SetFOnPublish;
+    Property OnMessage: MQTTCallback_On_message Write SetFOnMessage;
+    Property OnSubscribe: MQTTCallback_On_subscribe Write SetFOnSubscribe;
+    Property OnUnsubscribe: MQTTCallback_On_unsubscribe Write SetFOnUnsubscribe;
+    Property OnLog: MQTTCallback_On_log Write SetFOnLog;
 
-      property OnTlsSet: MQTTCallback_On_tls_set write SetFOnTlsSet;
-      property OnConnect: MQTTCallback_On_connect write SetFOnConnect;
-      property OnDisconnect: MQTTCallback_On_disconnect write SetFOnDisconnect;
-      property OnPublish: MQTTCallback_On_publish write SetFOnPublish;
-      property OnMessage: MQTTCallback_On_message write SetFOnMessage;
-      property OnSubscribe: MQTTCallback_On_subscribe write SetFOnSubscribe;
-      property OnUnsubscribe: MQTTCallback_On_unsubscribe write SetFOnUnsubscribe;
-      property OnLog: MQTTCallback_On_log write SetFOnLog;
+  Published
+  End;
 
-    published
-
-  end;
-
-function GetClinet(mosq: Pmosquitto): IMQTTClinet;
-var
+Function GetClinet(mosq: Pmosquitto): IMQTTClinet;
+Var
   PointerValue: Integer;
   LocalClientValue: IMQTTClinet;
-begin
-  result := nil;
-  if mosq = nil then
-    exit;
-  if not ClientList.TryGetValue(Integer(mosq), PointerValue) then
-    exit;
+Begin
+  Result := nil;
+  If mosq = nil Then
+    Exit;
+  If Not ClientList.TryGetValue(Integer(mosq), PointerValue) Then
+    Exit;
 
-  LocalClientValue := TMQTTClient(Pointer(PointerValue));;
-  result := LocalClientValue;
-end;
+  LocalClientValue := TMQTTClient(Pointer(PointerValue));
+  ;
+  Result := LocalClientValue;
+End;
 
-function Callback_tls_set(buf: PChar; size: Integer; rwflag: Integer; userdata: Pointer): Integer; cdecl;
-begin
+Function Callback_tls_set(buf: PChar; size: Integer; rwflag: Integer; userdata: Pointer): Integer; Cdecl;
+Begin
   CodeSite.SendNote('Callback_tls_set');
+End;
 
-end;
-
-procedure Callback_on_connect(mosq: Pmosquitto; obj: Pointer; rc: Integer); cdecl;
-var
+Procedure Callback_on_connect(mosq: Pmosquitto; obj: Pointer; rc: Integer); Cdecl;
+Var
   LocalClientValue: IMQTTClinet;
-begin
+Begin
   LocalClientValue := GetClinet(mosq);
-  if LocalClientValue <> nil then
-  begin
-    try
+  If LocalClientValue <> nil Then
+  Begin
+    Try
       LocalClientValue.feedback_main_callback_on_connect(mosq, obj, rc);
-    except
-    end;
-  end
-  else
+    Except
+    End;
+  End
+  Else
     CodeSite.SendNote('Callback_on_connect parrent nil');
-end;
+End;
 
-procedure Callback_on_disconnect(mosq: Pmosquitto; obj: Pointer; rc: Integer); cdecl;
-var
+Procedure Callback_on_disconnect(mosq: Pmosquitto; obj: Pointer; rc: Integer); Cdecl;
+Var
   LocalClientValue: IMQTTClinet;
-begin
+Begin
   LocalClientValue := GetClinet(mosq);
-  if LocalClientValue <> nil then
-  begin
-    try
+  If LocalClientValue <> nil Then
+  Begin
+    Try
       LocalClientValue.feedback_main_callback_on_disconnect(mosq, obj, rc);
-    except
-    end;
-  end
-  else
+    Except
+    End;
+  End
+  Else
     CodeSite.SendNote('Callback_on_disconnect parrent nil');
+End;
 
-end;
-
-procedure Callback_on_publish(mosq: Pmosquitto; obj: Pointer; mid: Integer); cdecl;
-var
+Procedure Callback_on_publish(mosq: Pmosquitto; obj: Pointer; mid: Integer); Cdecl;
+Var
   LocalClientValue: IMQTTClinet;
-begin
+Begin
   LocalClientValue := GetClinet(mosq);
-  if LocalClientValue <> nil then
-  begin
-    try
+  If LocalClientValue <> nil Then
+  Begin
+    Try
       LocalClientValue.feedback_main_callback_on_publish(mosq, obj, mid);
-    except
-    end;
-  end
-  else
+    Except
+    End;
+  End
+  Else
     CodeSite.SendNote('Callback_on_publish parrent nil');
-end;
+End;
 
-procedure Callback_on_message(mosq: Pmosquitto; obj: Pointer; mosquitto_message: P_mosquitto_message); cdecl;
-var
+Procedure Callback_on_message(mosq: Pmosquitto; obj: Pointer; mosquitto_message: P_mosquitto_message); Cdecl;
+Var
   LocalClientValue: IMQTTClinet;
-begin
+Begin
   LocalClientValue := GetClinet(mosq);
-  if LocalClientValue <> nil then
-  begin
-    try
+  If LocalClientValue <> nil Then
+  Begin
+    Try
       LocalClientValue.feedback_main_callback_on_message(mosq, obj, mosquitto_message);
-    except
-    end;
-  end
-  else
+    Except
+    End;
+  End
+  Else
     CodeSite.SendNote('Callback_on_message parrent nil');
+End;
 
-end;
-
-procedure Callback_on_subscribe(mosq: Pmosquitto; obj: Pointer; mid: Integer; qos_count: Integer; granted_qos: PInteger); cdecl;
-var
+Procedure Callback_on_subscribe(mosq: Pmosquitto; obj: Pointer; mid: Integer; qos_count: Integer; granted_qos: PInteger); Cdecl;
+Var
   LocalClientValue: IMQTTClinet;
-begin
+Begin
   LocalClientValue := GetClinet(mosq);
-  if LocalClientValue <> nil then
-  begin
-    try
+  If LocalClientValue <> nil Then
+  Begin
+    Try
       LocalClientValue.feedback_main_callback_on_subscribe(mosq, obj, mid, qos_count, granted_qos);
-    except
-    end;
-  end
-  else
+    Except
+    End;
+  End
+  Else
     CodeSite.SendNote('Callback_on_subscribe parrent nil');
+End;
 
-end;
-
-procedure Callback_on_unsubscribe(mosq: Pmosquitto; obj: Pointer; mid: Integer); cdecl;
-var
+Procedure Callback_on_unsubscribe(mosq: Pmosquitto; obj: Pointer; mid: Integer); Cdecl;
+Var
   LocalClientValue: IMQTTClinet;
-begin
+Begin
   LocalClientValue := GetClinet(mosq);
-  if LocalClientValue <> nil then
-  begin
-    try
+  If LocalClientValue <> nil Then
+  Begin
+    Try
       LocalClientValue.feedback_main_callback_on_unsubscribe(mosq, obj, mid);
-    except
-    end;
-  end
-  else
-  begin
+    Except
+    End;
+  End
+  Else
+  Begin
     CodeSite.SendNote('Callback_on_unsubscribe parrent nil');
-  end;
+  End;
+End;
 
-end;
-
-procedure Callback_on_log(mosq: Pmosquitto; obj: Pointer; level: Integer; str: PAnsiChar); cdecl;
-var
+Procedure Callback_on_log(mosq: Pmosquitto; obj: Pointer; level: Integer; str: PAnsiChar); Cdecl;
+Var
   LocalClientValue: IMQTTClinet;
-begin
+Begin
   LocalClientValue := GetClinet(mosq);
-  if LocalClientValue <> nil then
-  begin
-    try
+  If LocalClientValue <> nil Then
+  Begin
+    Try
       LocalClientValue.feedback_main_callback_on_log(mosq, obj, level, str);
-    except
-    end;
-  end
-  else
+    Except
+    End;
+  End
+  Else
     CodeSite.SendNote('Callback_on_log parrent nil');
-
-end;
+End;
 
 { TMQTTClient }
 
-function TMQTTClient.Connect: Boolean;
-var
+Function TMQTTClient.Connect: Boolean;
+Var
   res: Integer;
-  errdesc: string;
-
-begin
-  result := false;
-  if not self.SessionStart then
+  errdesc: String;
+Begin
+  Result := False;
+  If Not Self.SessionStart Then
     Abort;
 
-  if f_connected = True then
+  If f_connected = True Then
     Abort;
 
-  self.FConnectionState := tcsConnecting;
+  Self.FConnectionState := tcsConnecting;
 
-  try
+  Self.Disconnect;
 
-    self.Disconnect;
+  mosquitto_will_clear(Self.f_mosq);
 
-    mosquitto_will_clear(self.f_mosq);
+  res := mosquitto_username_pw_set(Self.f_mosq, PAnsiChar(f_user_name), PAnsiChar(f_user_password));
 
-    res := mosquitto_username_pw_set(self.f_mosq, PAnsiChar(f_user_name), PAnsiChar(f_user_password));
+  If res <> MOSQ_ERR_SUCCESS Then
+  Begin
+    Case res Of
+      MOSQ_ERR_INVAL:
+        errdesc := 'The input parameters is invalid';
+      MOSQ_ERR_NOMEM:
+        errdesc := 'An out of memory condition occurred';
+    Else
+      errdesc := 'Unknown error';
+    End;
+    CodeSite.SendNote('Autoryzacja - Ustawiania danych User name Password: ' + errdesc);
 
-    if res <> MOSQ_ERR_SUCCESS then
-    begin
-      case res of
-        MOSQ_ERR_INVAL:
-          errdesc := 'The input parameters is invalid';
-        MOSQ_ERR_NOMEM:
-          errdesc := 'An out of memory condition occurred';
-      else
-        errdesc := 'Unknown error';
-      end;
-      CodeSite.SendNote('Autoryzacja - B³¹d po³¹czenia User name Password: ' + errdesc);
-      Abort;
-    end;
+    Raise Exception.CreateFmt(errdesc + ' Err No: %d', [res]);
 
-    CodeSite.SendNote('mosquitto_threaded_set result = ' + IntToStr(mosquitto_threaded_set(self.f_mosq, 1)));
+    Abort;
+  End;
 
-    res := mosquitto_connect(self.f_mosq, PAnsiChar(f_hostname), f_port, f_keepalive);
+  CodeSite.SendNote('mosquitto_threaded_set result = ' + IntToStr(mosquitto_threaded_set(Self.f_mosq, 1)));
 
-    if res <> MOSQ_ERR_SUCCESS then
-    begin
-      case res of
+  res := mosquitto_connect(Self.f_mosq, PAnsiChar(f_hostname), f_port, f_keepalive);
 
-        MOSQ_ERR_INVAL:
-          errdesc := ' the input parameters were invalid.';
-        MOSQ_ERR_NOMEM:
-          errdesc := ' an out of memory condition occurred.';
-        MOSQ_ERR_NO_CONN:
-          errdesc := ' the client isn’t connected to a broker.';
-        MOSQ_ERR_CONN_LOST:
-          errdesc := ' the connection to the broker was lost.';
-        MOSQ_ERR_PROTOCOL:
-          errdesc := ' there is a protocol error communicating with the broker.';
-        MOSQ_ERR_ERRNO:
-          errdesc :=
-            ' a system call returned an error.  The variable errno contains the error code, even on Windows.  Use strerror_r() where available or FormatMessage() on Windows.';
-      else
-        errdesc := 'Unknown error';
-      end;
-      CodeSite.SendNote('Authorization - Connection establishing error: ' + errdesc);
-      Abort;
-    end;
+  If res <> MOSQ_ERR_SUCCESS Then
+  Begin
+    Case res Of
 
-    self.f_connected := True;
+      MOSQ_ERR_INVAL:
+        errdesc := 'the input parameters were invalid.';
+      MOSQ_ERR_NOMEM:
+        errdesc := 'an out of memory condition occurred.';
+      MOSQ_ERR_NO_CONN:
+        errdesc := 'the client isn’t connected to a broker.';
+      MOSQ_ERR_CONN_LOST:
+        errdesc := 'the connection to the broker was lost.';
+      MOSQ_ERR_PROTOCOL:
+        errdesc := 'there is a protocol error communicating with the broker.';
+      MOSQ_ERR_ERRNO:
+        errdesc :=
+          'Connection is not avaible';
+    Else
+      errdesc := 'Unknown error';
+    End;
 
-    CodeSite.SendNote('Global: ' + IntToStr(Integer(self.f_mosq)));
+    CodeSite.SendNote('Nawi¹zywanie po³¹czenia - Connection establishing error: ' + errdesc);
+    Raise Exception.CreateFmt(errdesc + ' Err No: %d', [res]);
 
-    f_loop_task := TTask.Run(
-      procedure()
-      begin
-        CodeSite.SendNote('IntTask: ' + IntToStr(Integer(self.f_mosq)));
+    Abort;
+  End;
 
-        res := mosquitto_loop_forever(self.f_mosq, -1, 1);;
+  Self.f_connected := True;
 
-        if res <> MOSQ_ERR_SUCCESS then
-        begin
-          case res of
+  CodeSite.SendNote('Global: ' + IntToStr(Integer(Self.f_mosq)));
 
-            MOSQ_ERR_NOT_SUPPORTED:
-              errdesc := 'Thread support is not available';
-            MOSQ_ERR_INVAL:
-              errdesc := 'the input parameters were invalid.';
-            MOSQ_ERR_NOMEM:
-              errdesc := 'an out of memory condition occurred.';
-            MOSQ_ERR_NO_CONN:
-              errdesc := 'the client isn’t connected to a broker.';
-            MOSQ_ERR_CONN_LOST:
-              errdesc := 'the connection to the broker was lost.';
-            MOSQ_ERR_PROTOCOL:
-              errdesc := 'there is a protocol error communicating with the broker.';
-            MOSQ_ERR_ERRNO:
-              errdesc :=
-                'a system call returned an error.  The variable errno contains the error code, even on Windows.  Use strerror_r() where available or FormatMessage() on Windows.';
-          else
-            errdesc := 'Unknown error';
-          end;
-          CodeSite.SendNote('Authorization - Error starting library loop: ' + errdesc);
+  f_loop_task := TTask.Run(
+    Procedure()
+    Begin
+      CodeSite.SendNote('IntTask: ' + IntToStr(Integer(Self.f_mosq)));
 
-          Abort;
-        end;
+      res := mosquitto_loop_forever(Self.f_mosq, -1, 1);
 
-      end);
+      If res <> MOSQ_ERR_SUCCESS Then
+      Begin
+        Case res Of
 
-  finally
+          MOSQ_ERR_NOT_SUPPORTED:
+            errdesc := 'Thread support is not available';
+          MOSQ_ERR_INVAL:
+            errdesc := 'the input parameters were invalid.';
+          MOSQ_ERR_NOMEM:
+            errdesc := 'an out of memory condition occurred.';
+          MOSQ_ERR_NO_CONN:
+            errdesc := 'the client isn’t connected to a broker.';
+          MOSQ_ERR_CONN_LOST:
+            errdesc := 'the connection to the broker was lost.';
+          MOSQ_ERR_PROTOCOL:
+            errdesc := 'there is a protocol error communicating with the broker.';
+          MOSQ_ERR_ERRNO:
+            errdesc :=
+              'a system call returned an error.  The variable errno contains the error code, even on Windows.  Use strerror_r() where available or FormatMessage() on Windows.';
+        Else
+          errdesc := 'Unknown error';
+        End;
+        CodeSite.SendNote('Authorization - Error starting library loop: ' + errdesc);
 
-  end;
+        Raise Exception.CreateFmt(errdesc + ' Err No: %d', [res]);
 
-end;
+        Abort;
+      End;
+    End);
+End;
 
-function TMQTTClient.ConvertStringToUTF8(const str: string; var utf8str: AnsiString): Integer;
-var
+Function TMQTTClient.ConvertStringToUTF8(Const str: String; Var utf8str: AnsiString): Integer;
+Var
   L, SL: Integer;
-begin
+Begin
   SL := Length(str);
   L := SL * SizeOf(Char);
   L := L + 1;
@@ -535,356 +514,342 @@ begin
   SetLength(utf8str, L);
   UnicodeToUtf8(PAnsiChar(utf8str), L, PWideChar(str), SL);
   ConvertStringToUTF8 := System.SysUtils.StrLen(PAnsiChar(utf8str));
-end;
+End;
 
-procedure TMQTTClient.ConvertUTF8ToString(const utf8str: PAnsiChar; var str: string);
-var
+Procedure TMQTTClient.ConvertUTF8ToString(Const utf8str: PAnsiChar; Var str: String);
+Var
   L: Integer;
   Temp: UnicodeString;
-begin
+Begin
   L := System.SysUtils.StrLen(utf8str);
 
   str := '';
-  if L = 0 then
-    exit;
+  If L = 0 Then
+    Exit;
   SetLength(Temp, L);
 
   L := System.Utf8ToUnicode(PWideChar(Temp), L + 1, utf8str, L);
-  if L > 0 then
+  If L > 0 Then
     SetLength(Temp, L - 1)
-  else
+  Else
     Temp := '';
   str := Temp;
-end;
+End;
 
-procedure TMQTTClient.Convert_Payload_To_String(const utf8str: PAnsiChar; sz: Integer; var str: string);
-var
+Procedure TMQTTClient.Convert_Payload_To_String(Const utf8str: PAnsiChar; sz: Integer; Var str: String);
+Var
   L: Integer;
   Temp: UnicodeString;
-begin
+Begin
   str := '';
-  if sz = 0 then
-    exit;
+  If sz = 0 Then
+    Exit;
   SetLength(Temp, sz);
 
   L := System.Utf8ToUnicode(PWideChar(Temp), sz + 1, utf8str, sz);
-  if L > 0 then
+  If L > 0 Then
     SetLength(Temp, L - 1)
-  else
+  Else
     Temp := '';
   str := Temp;
+End;
 
-end;
-
-procedure TMQTTClient.Convert_Topic_To_String(const utf8str: PAnsiChar; var str: string);
-begin
+Procedure TMQTTClient.Convert_Topic_To_String(Const utf8str: PAnsiChar; Var str: String);
+Begin
   ConvertUTF8ToString(utf8str, str);
-end;
+End;
 
-constructor TMQTTClient.Create;
-begin
-  inherited;
+Constructor TMQTTClient.Create;
+Begin
+  Inherited;
   CodeSite.SendNote('TMQTTClient.Create - Start');
 
-  self.FOnTlsSet := nil;
-  self.FOnConnect := nil;
-  self.FOnDisconnect := nil;
-  self.FOnPublish := nil;
-  self.FOnMessage := nil;
-  self.FOnSubscribe := nil;
-  self.FOnUnsubscribe := nil;
-  self.FOnLog := nil;
+  Self.FOnTlsSet := nil;
+  Self.FOnConnect := nil;
+  Self.FOnDisconnect := nil;
+  Self.FOnPublish := nil;
+  Self.FOnMessage := nil;
+  Self.FOnSubscribe := nil;
+  Self.FOnUnsubscribe := nil;
+  Self.FOnLog := nil;
 
-  self.FConnectionState := tcsUnknown;
+  Self.FConnectionState := tcsUnknown;
 
-  self.FInitialized := false;
-  self.FSesionStarted := false;
-  self.f_connected := false;
+  Self.FInitialized := False;
+  Self.FSesionStarted := False;
+  Self.f_connected := False;
 
-  self.FLibVersion := 'ND';
+  Self.FLibVersion := 'ND';
 
-  self.f_mosq := nil;
-  self.f_user_id := '';
-  self.f_clean_session := 1;
+  Self.f_mosq := nil;
+  Self.f_user_id := '';
+  Self.f_clean_session := 1;
 
-  self.User := '';
-  self.Password := '';
+  Self.User := '';
+  Self.Password := '';
 
-  self.Host := '127.0.0.1';
-  self.Port := 1883;
+  Self.Host := '127.0.0.1';
+  Self.Port := 1883;
 
-  self.f_keepalive := 10;
+  Self.f_keepalive := 10;
 
-  self.FInitialized := self.libInit;
+  Self.FInitialized := Self.libInit;
 
   CodeSite.SendNote('TMQTTClient.Create - Done');
-end;
+End;
 
-destructor TMQTTClient.Destroy;
-begin
+Destructor TMQTTClient.Destroy;
+Begin
   CodeSite.SendNote('TMQTTClient.Destroy - Start');
 
-  self.Disconnect;
+  Self.Disconnect;
 
-  if self.FSesionStarted = True then
-  begin
-    ClientList.Remove(Integer(self.f_mosq));
-    mosquitto_destroy(self.f_mosq);
+  If Self.FSesionStarted = True Then
+  Begin
+    ClientList.Remove(Integer(Self.f_mosq));
+    mosquitto_destroy(Self.f_mosq);
     f_mosq := Nil;
-  end;
+  End;
 
   CodeSite.SendNote('TMQTTClient.Destroy - Done');
-  inherited;
-end;
+  Inherited;
+End;
 
-procedure TMQTTClient.Disconnect;
-var
+Procedure TMQTTClient.Disconnect;
+Var
   res: Integer;
-begin
-  try
-    if self.f_mosq <> Nil then
-    begin
-      if self.f_connected = True then
-      begin
+Begin
+  Try
+    If Self.f_mosq <> Nil Then
+    Begin
+      If Self.f_connected = True Then
+      Begin
 
-        res := mosquitto_disconnect(self.f_mosq);
-        if res <> MOSQ_ERR_SUCCESS then
+        res := mosquitto_disconnect(Self.f_mosq);
+        If res <> MOSQ_ERR_SUCCESS Then
           CodeSite.SendNote('mosquitto_disconnect = ' + IntToStr(res));
 
-        res := mosquitto_loop_write(self.f_mosq, 1);
-        if res <> MOSQ_ERR_SUCCESS then
+        res := mosquitto_loop_write(Self.f_mosq, 1);
+        If res <> MOSQ_ERR_SUCCESS Then
           CodeSite.SendNote('mosquitto_loop_write = ' + IntToStr(res));
-      end;
-    end;
-  finally
+      End;
+    End;
+  Finally
 
-  end;
+  End;
+End;
 
-end;
+Procedure TMQTTClient.feedback_main_callback_on_connect(mosq: Pmosquitto; obj: Pointer; rc: Integer);
+Begin
+  If Assigned(Self.FOnConnect) Then
+  Try
+    Self.FOnConnect(Self, obj, rc);
+  Except
+  End;
+  If rc = MOSQ_ERR_SUCCESS Then
+    Self.FConnectionState := tcsConnected;
+End;
 
-procedure TMQTTClient.feedback_main_callback_on_connect(mosq: Pmosquitto; obj: Pointer; rc: Integer);
-begin
-  if Assigned(self.FOnConnect) then
-    try
-      self.FOnConnect(self, obj, rc);
-    except
+Procedure TMQTTClient.feedback_main_callback_on_disconnect(mosq: Pmosquitto; obj: Pointer; rc: Integer);
+Begin
+  Self.FConnectionState := tcsDisconnected;
+  If Assigned(Self.FOnDisconnect) Then
+  Try
+    Self.FOnDisconnect(Self, obj, rc);
+  Except
+  End;
+End;
 
-    end;
-  self.FConnectionState := tcsConnected;
-end;
+Procedure TMQTTClient.feedback_main_callback_on_log(mosq: Pmosquitto; obj: Pointer; level: Integer; str: PAnsiChar);
+Begin
+  If Assigned(Self.FOnLog) Then
+  Try
+    Self.FOnLog(Self, obj, level, str);
+  Except
+  End;
+End;
 
-procedure TMQTTClient.feedback_main_callback_on_disconnect(mosq: Pmosquitto; obj: Pointer; rc: Integer);
-begin
-  self.FConnectionState := tcsDisconnected;
-
-  if Assigned(self.FOnDisconnect) then
-    try
-      self.FOnDisconnect(self, obj, rc);
-    except
-
-    end;
-
-end;
-
-procedure TMQTTClient.feedback_main_callback_on_log(mosq: Pmosquitto; obj: Pointer; level: Integer; str: PAnsiChar);
-begin
-
-  if Assigned(self.FOnLog) then
-    try
-      self.FOnLog(self, obj, level, str);
-    except
-
-    end;
-
-end;
-
-procedure TMQTTClient.feedback_main_callback_on_message(mosq: Pmosquitto; obj: Pointer; mosquitto_message: P_mosquitto_message);
-var
+Procedure TMQTTClient.feedback_main_callback_on_message(mosq: Pmosquitto; obj: Pointer; mosquitto_message: P_mosquitto_message);
+Var
   dst: P_mosquitto_message;
-
   HEXVal: String;
   StringVal: String;
   val_no: Integer;
   TopisLoc: String;
-begin
-  if Assigned(self.FOnMessage) then
-    try
-      self.FOnMessage(self, obj, mosquitto_message);
-    except
+Begin
+  If Assigned(Self.FOnMessage) Then
+  Try
+    Self.FOnMessage(Self, obj, mosquitto_message);
+  Except
+  End;
+End;
 
-    end;
-end;
+Procedure TMQTTClient.feedback_main_callback_on_publish(mosq: Pmosquitto; obj: Pointer; mid: Integer);
+Begin
 
-procedure TMQTTClient.feedback_main_callback_on_publish(mosq: Pmosquitto; obj: Pointer; mid: Integer);
-begin
+  If Assigned(Self.FOnPublish) Then
+  Try
+    Self.FOnPublish(Self, obj, mid);
+  Except
+  End;
+End;
 
-  if Assigned(self.FOnPublish) then
-    try
-      self.FOnPublish(self, obj, mid);
-    except
+Procedure TMQTTClient.feedback_main_callback_on_subscribe(mosq: Pmosquitto; obj: Pointer; mid, qos_count: Integer; granted_qos: PInteger);
+Begin
 
-    end;
+  If Assigned(Self.FOnSubscribe) Then
+  Try
+    Self.FOnSubscribe(Self, obj, mid, qos_count, granted_qos);
+  Except
+  End;
+End;
 
-end;
+Procedure TMQTTClient.feedback_main_callback_on_unsubscribe(mosq: Pmosquitto; obj: Pointer; mid: Integer);
+Begin
 
-procedure TMQTTClient.feedback_main_callback_on_subscribe(mosq: Pmosquitto; obj: Pointer; mid, qos_count: Integer; granted_qos: PInteger);
-begin
+  If Assigned(Self.FOnUnsubscribe) Then
+  Try
+    Self.FOnUnsubscribe(Self, obj, mid);
+  Except
+  End;
+End;
 
-  if Assigned(self.FOnSubscribe) then
-    try
-      self.FOnSubscribe(self, obj, mid, qos_count, granted_qos);
-    except
+Function TMQTTClient.feedback_main_callback_tls_set(buf: PChar; size, rwflag: Integer; userdata: Pointer): Integer;
+Begin
 
-    end;
+  If Assigned(Self.FOnTlsSet) Then
+  Try
+    Result := Self.FOnTlsSet(Self, buf, size, rwflag, userdata)
+  Except
+  End;
+End;
 
-end;
+Function TMQTTClient.GetFCleanSession: Boolean;
+Begin
+  If Self.f_clean_session > 0 Then
+    Result := True
+  Else
+    Result := False;
+End;
 
-procedure TMQTTClient.feedback_main_callback_on_unsubscribe(mosq: Pmosquitto; obj: Pointer; mid: Integer);
-begin
+Function TMQTTClient.GetFClientID: String;
+Begin
+  ConvertUTF8ToString(PAnsiChar(Self.f_user_id), Result);
+End;
 
-  if Assigned(self.FOnUnsubscribe) then
-    try
-      self.FOnUnsubscribe(self, obj, mid);
-    except
+Function TMQTTClient.GetFHost: String;
+Begin
+  ConvertUTF8ToString(PAnsiChar(Self.f_hostname), Result);
+End;
 
-    end;
-end;
+Function TMQTTClient.GetFInitialized: Boolean;
+Begin
+  If Not Self.FInitialized Then
+    Self.libInit;
 
-function TMQTTClient.feedback_main_callback_tls_set(buf: PChar; size, rwflag: Integer; userdata: Pointer): Integer;
-begin
+  Result := Self.FInitialized;
+End;
 
-  if Assigned(self.FOnTlsSet) then
-    try
-      result := self.FOnTlsSet(self, buf, size, rwflag, userdata)
-    except
+Function TMQTTClient.GetFKeepAlive: Integer;
+Begin
+  Result := Self.f_keepalive
+End;
 
-    end;
-end;
+Function TMQTTClient.GetFPassword: String;
+Begin
+  ConvertUTF8ToString(PAnsiChar(Self.f_user_password), Result);
+End;
 
-function TMQTTClient.GetFCleanSession: Boolean;
-begin
-  if self.f_clean_session > 0 then
-    result := True
-  else
-    result := false;
-end;
+Function TMQTTClient.GetFPort: UInt32;
+Begin
+  Result := Self.f_port;
+End;
 
-function TMQTTClient.GetFClientID: String;
-begin
-  ConvertUTF8ToString(PAnsiChar(self.f_user_id), result);
-end;
+Function TMQTTClient.GetFUser: String;
+Begin
+  ConvertUTF8ToString(PAnsiChar(Self.f_user_name), Result);
+End;
 
-function TMQTTClient.GetFHost: String;
-begin
-  ConvertUTF8ToString(PAnsiChar(self.f_hostname), result);
-end;
+Function TMQTTClient.GetState: TConnectionState;
+Begin
+  Result := Self.FConnectionState;
+End;
 
-function TMQTTClient.GetFInitialized: Boolean;
-begin
-  if not self.FInitialized then
-    self.libInit;
+Function TMQTTClient.isConnected: Boolean;
+Begin
+  If (Self.f_connected) And (Self.FConnectionState = tcsConnected) Then
+    Result := True
+  Else
+    Result := False;
+End;
 
-  result := self.FInitialized;
-end;
-
-function TMQTTClient.GetFKeepAlive: Integer;
-begin
-  result := self.f_keepalive
-end;
-
-function TMQTTClient.GetFPassword: String;
-begin
-  ConvertUTF8ToString(PAnsiChar(self.f_user_password), result);
-end;
-
-function TMQTTClient.GetFPort: Uint32;
-begin
-  result := self.f_port;
-end;
-
-function TMQTTClient.GetFUser: String;
-begin
-  ConvertUTF8ToString(PAnsiChar(self.f_user_name), result);
-end;
-
-function TMQTTClient.GetState: TConnectionState;
-begin
-  result := self.FConnectionState;
-end;
-
-function TMQTTClient.isConnected: Boolean;
-begin
-  result := self.f_connected;
-end;
-
-function TMQTTClient.libInit: Boolean;
-var
+Function TMQTTClient.libInit: Boolean;
+Var
   res: Integer;
   major: Integer;
   minor: Integer;
   revision: Integer;
-begin
-  result := True;
+Begin
+  Result := True;
   res := mosquitto_lib_init;
 
-  if res <> MOSQ_ERR_SUCCESS then
-  begin
-    result := false;
-  end;
+  If res <> MOSQ_ERR_SUCCESS Then
+  Begin
+    Result := False;
+  End;
 
   mosquitto_lib_version(@major, @minor, @revision);
 
-  self.FLibVersion := IntToStr(major) + '.' + IntToStr(minor) + '.' + IntToStr(revision);
+  Self.FLibVersion := IntToStr(major) + '.' + IntToStr(minor) + '.' + IntToStr(revision);
+End;
 
-end;
+Function TMQTTClient.libVersion: String;
+Begin
+  If Not Self.FInitialized Then
+    Self.libInit;
 
-function TMQTTClient.libVersion: String;
-begin
-  if not self.FInitialized then
-    self.libInit;
+  Result := Self.FLibVersion;
+End;
 
-  result := self.FLibVersion;
-end;
-
-function TMQTTClient.Publish(const topic: string; const payload: string; const QoS: Integer; const retain: Boolean): Boolean;
-var
+Function TMQTTClient.Publish(Const topic: String; Const payload: String; Const QoS: Integer; Const retain: Boolean): Boolean;
+Var
   res: Integer;
-  errdesc: string;
-begin
-  result := false;
+  errdesc: String;
+Begin
+  Result := False;
 
-  if f_connected = false then
+  If f_connected = False Then
     Abort;
 
-  inc(f_pub_id);
+  Inc(f_pub_id);
 
   // ------------------------------------
   f_pub_qos := QoS;
   // ------------------------------------
-  if retain then
+  If retain Then
     f_pub_retain := 1
-  else
+  Else
     f_pub_retain := 0;
   // ------------------------------------
-  if topic = '' then
+  If topic = '' Then
     f_pub_topic := ''
-  else
-  begin
+  Else
+  Begin
     ConvertStringToUTF8(topic, f_pub_topic);
-  end;
+  End;
   // ------------------------------------
-  if payload = '' then
+  If payload = '' Then
     f_pub_payload := ''
-  else
-  begin
+  Else
+  Begin
     f_pub_payload_len := ConvertStringToUTF8(payload, f_pub_payload);
-  end;
+  End;
   // ------------------------------------
 
   res := mosquitto_publish(f_mosq, @f_pub_id, PAnsiChar(f_pub_topic), f_pub_payload_len, Pointer(f_pub_payload), f_pub_qos, f_pub_retain);
-  if res <> MOSQ_ERR_SUCCESS then
-  begin
-    case res of
+  If res <> MOSQ_ERR_SUCCESS Then
+  Begin
+    Case res Of
       MOSQ_ERR_INVAL:
         errdesc := 'The input parameters is invalid';
       MOSQ_ERR_NOMEM:
@@ -901,37 +866,37 @@ begin
         errdesc := 'the QoS is greater than that supported by the broker.';
       MOSQ_ERR_OVERSIZE_PACKET:
         errdesc := 'the resulting packet would be larger than supported by the broker.';
-    else
+    Else
       errdesc := 'Unknown error';
-    end;
+    End;
 
     Abort;
-  end;
+  End;
 
-  result := True;
-end;
+  Result := True;
+End;
 
-function TMQTTClient.SessionStart: Boolean;
-begin
-  result := false;
-  self.f_connected := false;
+Function TMQTTClient.SessionStart: Boolean;
+Begin
+  Result := False;
+  Self.f_connected := False;
 
-  if self.FSesionStarted = True then
-  begin
-    ClientList.Remove(Integer(self.f_mosq));
-    mosquitto_destroy(self.f_mosq);
+  If Self.FSesionStarted = True Then
+  Begin
+    ClientList.Remove(Integer(Self.f_mosq));
+    mosquitto_destroy(Self.f_mosq);
     f_mosq := Nil;
-  end;
+  End;
 
-  if self.f_user_id = '' then
-    f_mosq := mosquitto_new(nil, self.f_clean_session, @self.f_user_obj)
-  else
-    f_mosq := mosquitto_new(PAnsiChar(self.f_user_id), self.f_clean_session, @self.f_user_obj);
+  If Self.f_user_id = '' Then
+    f_mosq := mosquitto_new(nil, Self.f_clean_session, @Self.f_user_obj)
+  Else
+    f_mosq := mosquitto_new(PAnsiChar(Self.f_user_id), Self.f_clean_session, @Self.f_user_obj);
 
-  if f_mosq = Nil then
-  begin
+  If f_mosq = Nil Then
+  Begin
     Abort;
-  end;
+  End;
 
   mosquitto_connect_callback_set(f_mosq, Callback_on_connect);
   mosquitto_disconnect_callback_set(f_mosq, Callback_on_disconnect);
@@ -941,104 +906,104 @@ begin
   mosquitto_unsubscribe_callback_set(f_mosq, Callback_on_unsubscribe);
   mosquitto_log_callback_set(f_mosq, Callback_on_log);
 
-  ClientList.Add(Integer(self.f_mosq), Integer(self));
+  ClientList.Add(Integer(Self.f_mosq), Integer(Self));
 
-  self.FSesionStarted := True;
-  result := True;
-end;
+  Self.FSesionStarted := True;
+  Result := True;
+End;
 
-procedure TMQTTClient.SetFCleanSession(const Value: Boolean);
-begin
-  if Value then
+Procedure TMQTTClient.SetFCleanSession(Const Value: Boolean);
+Begin
+  If Value Then
     f_clean_session := 1
-  else
+  Else
     f_clean_session := 0;
-end;
+End;
 
-procedure TMQTTClient.setFClientID(const Value: String);
-begin
-  if Trim(Value) = '' then
+Procedure TMQTTClient.setFClientID(Const Value: String);
+Begin
+  If Trim(Value) = '' Then
     f_user_id := ''
-  else
+  Else
     ConvertStringToUTF8(Value, f_user_id);
-end;
+End;
 
-procedure TMQTTClient.SetFHost(const Value: String);
-begin
-  ConvertStringToUTF8(Value, self.f_hostname);
-end;
+Procedure TMQTTClient.SetFHost(Const Value: String);
+Begin
+  ConvertStringToUTF8(Value, Self.f_hostname);
+End;
 
-procedure TMQTTClient.SetFOnConnect(const Value: MQTTCallback_On_connect);
-begin
-  self.FOnConnect := Value;
-end;
+Procedure TMQTTClient.SetFOnConnect(Const Value: MQTTCallback_On_connect);
+Begin
+  Self.FOnConnect := Value;
+End;
 
-procedure TMQTTClient.SetFOnDisconnect(const Value: MQTTCallback_On_disconnect);
-begin
-  self.FOnDisconnect := Value;
-end;
+Procedure TMQTTClient.SetFOnDisconnect(Const Value: MQTTCallback_On_disconnect);
+Begin
+  Self.FOnDisconnect := Value;
+End;
 
-procedure TMQTTClient.SetFOnLog(const Value: MQTTCallback_On_log);
-begin
-  self.FOnLog := Value;
-end;
+Procedure TMQTTClient.SetFOnLog(Const Value: MQTTCallback_On_log);
+Begin
+  Self.FOnLog := Value;
+End;
 
-procedure TMQTTClient.SetFOnMessage(const Value: MQTTCallback_On_message);
-begin
-  self.FOnMessage := Value;
-end;
+Procedure TMQTTClient.SetFOnMessage(Const Value: MQTTCallback_On_message);
+Begin
+  Self.FOnMessage := Value;
+End;
 
-procedure TMQTTClient.SetFOnPublish(const Value: MQTTCallback_On_publish);
-begin
-  self.FOnPublish := Value;
-end;
+Procedure TMQTTClient.SetFOnPublish(Const Value: MQTTCallback_On_publish);
+Begin
+  Self.FOnPublish := Value;
+End;
 
-procedure TMQTTClient.SetFOnSubscribe(const Value: MQTTCallback_On_subscribe);
-begin
-  self.FOnSubscribe := Value;
-end;
+Procedure TMQTTClient.SetFOnSubscribe(Const Value: MQTTCallback_On_subscribe);
+Begin
+  Self.FOnSubscribe := Value;
+End;
 
-procedure TMQTTClient.SetFOnTlsSet(const Value: MQTTCallback_On_tls_set);
-begin
-  self.FOnTlsSet := Value;
-end;
+Procedure TMQTTClient.SetFOnTlsSet(Const Value: MQTTCallback_On_tls_set);
+Begin
+  Self.FOnTlsSet := Value;
+End;
 
-procedure TMQTTClient.SetFOnUnsubscribe(const Value: MQTTCallback_On_unsubscribe);
-begin
-  self.FOnUnsubscribe := Value;
-end;
+Procedure TMQTTClient.SetFOnUnsubscribe(Const Value: MQTTCallback_On_unsubscribe);
+Begin
+  Self.FOnUnsubscribe := Value;
+End;
 
-procedure TMQTTClient.SetFPassword(const Value: String);
-begin
+Procedure TMQTTClient.SetFPassword(Const Value: String);
+Begin
   ConvertStringToUTF8(Value, f_user_password);
-end;
+End;
 
-procedure TMQTTClient.SetFPort(const Value: Uint32);
-begin
-  self.f_port := Value;
-end;
+Procedure TMQTTClient.SetFPort(Const Value: UInt32);
+Begin
+  Self.f_port := Value;
+End;
 
-procedure TMQTTClient.SetFUser(const Value: String);
-begin
+Procedure TMQTTClient.SetFUser(Const Value: String);
+Begin
   ConvertStringToUTF8(Value, f_user_name);
-end;
+End;
 
-procedure TMQTTClient.SetKeepAlive(const Value: Integer);
-begin
-  self.f_keepalive := Value;
-end;
+Procedure TMQTTClient.SetKeepAlive(Const Value: Integer);
+Begin
+  Self.f_keepalive := Value;
+End;
 
-function TMQTTClient.Subscribe(const topic: string; const QoS: Integer; const retain: Boolean): Boolean;
-var
+Function TMQTTClient.Subscribe(Const topic: String; Const QoS: Integer; Const retain: Boolean): Boolean;
+Var
   res: Integer;
   result_exec: String;
-begin
+Begin
 
-  self.ConvertStringToUTF8(topic, self.f_sub_topic);
-  self.f_sub_qos := QoS;
+  Self.ConvertStringToUTF8(topic, Self.f_sub_topic);
+  Self.f_sub_qos := QoS;
 
-  res := mosquitto_subscribe(self.f_mosq, @(self.f_sub_id), PAnsiChar(self.f_sub_topic), self.f_sub_qos);
-  case res of
+  res := mosquitto_subscribe(Self.f_mosq, @(Self.f_sub_id), PAnsiChar(Self.f_sub_topic), Self.f_sub_qos);
+  Case res Of
     MOSQ_ERR_SUCCESS:
       result_exec := 'success.';
     MOSQ_ERR_INVAL:
@@ -1051,25 +1016,23 @@ begin
       result_exec := 'the topic is not valid UTF-8';
     MOSQ_ERR_OVERSIZE_PACKET:
       result_exec := 'the resulting packet would be larger than supported by the broker.';
-
-  end;
+  End;
 
   CodeSite.SendNote('mosquitto_subscribe result = ' + IntToStr(res) + ' ' + result_exec);
+End;
 
-end;
-
-function TMQTTClient.Unsubscribe(const topic: string): Boolean;
-var
+Function TMQTTClient.Unsubscribe(Const topic: String): Boolean;
+Var
   res: Integer;
   result_exec: String;
-begin
-  if Trim(topic) = '' then
-    exit;
+Begin
+  If Trim(topic) = '' Then
+    Exit;
 
-  self.ConvertStringToUTF8(topic, self.f_sub_topic);
+  Self.ConvertStringToUTF8(topic, Self.f_sub_topic);
 
-  res := mosquitto_unsubscribe(self.f_mosq, @(self.f_sub_id), PAnsiChar(self.f_sub_topic));
-  case res of
+  res := mosquitto_unsubscribe(Self.f_mosq, @(Self.f_sub_id), PAnsiChar(Self.f_sub_topic));
+  Case res Of
     MOSQ_ERR_SUCCESS:
       result_exec := 'success.';
     MOSQ_ERR_INVAL:
@@ -1082,63 +1045,58 @@ begin
       result_exec := 'the topic is not valid UTF-8';
     MOSQ_ERR_OVERSIZE_PACKET:
       result_exec := 'the resulting packet would be larger than supported by the broker.';
-
-  end;
+  End;
 
   CodeSite.SendNote('mosquitto_unsubscribe result = ' + IntToStr(res) + ' ' + result_exec);
+End;
 
-end;
+Function MQTTClientCreate: IMQTTClinet;
+Begin
+  Result := TMQTTClient.Create;
+End;
 
-function MQTTClientCreate: IMQTTClinet;
-begin
-  result := TMQTTClient.Create;
-end;
-
-procedure Convert_Topic_To_String(const utf8str: PAnsiChar; var str: string);
-var
+Procedure Convert_Topic_To_String(Const utf8str: PAnsiChar; Var str: String);
+Var
   L: Integer;
   Temp: UnicodeString;
-begin
+Begin
   L := System.SysUtils.StrLen(utf8str);
 
   str := '';
-  if L = 0 then
-    exit;
+  If L = 0 Then
+    Exit;
   SetLength(Temp, L);
 
   L := System.Utf8ToUnicode(PWideChar(Temp), L + 1, utf8str, L);
-  if L > 0 then
+  If L > 0 Then
     SetLength(Temp, L - 1)
-  else
+  Else
     Temp := '';
   str := Temp;
+End;
 
-end;
-
-function ConvertStringToUTF8(const str: string; var utf8str: AnsiString): Integer;
-var
+Function ConvertStringToUTF8(Const str: String; Var utf8str: AnsiString): Integer;
+Var
   L, SL: Integer;
-begin
+Begin
   SL := Length(str);
   L := SL * SizeOf(Char);
   L := L + 1;
 
   SetLength(utf8str, L);
   UnicodeToUtf8(PAnsiChar(utf8str), L, PWideChar(str), SL);
-  result := System.SysUtils.StrLen(PAnsiChar(utf8str));
+  Result := System.SysUtils.StrLen(PAnsiChar(utf8str));
+End;
 
-end;
+Initialization
+  CodeSite.SendNote('Initialization start');
+  ClientList := TDictionary<Integer, Integer>.Create;
+  CodeSite.SendNote('Initialization Done');
 
-initialization
+Finalization
+  CodeSite.SendNote('finalization start');
+  FreeAndNil(ClientList);
+  CodeSite.SendNote('finalization Done');
 
-CodeSite.SendNote('Initialization start');
-ClientList := TDictionary<Integer, Integer>.Create;
-CodeSite.SendNote('Initialization Done');
+End.
 
-finalization
-
-CodeSite.SendNote('finalization start');
-FreeAndNil(ClientList);
-CodeSite.SendNote('finalization Done');
-
-end.
